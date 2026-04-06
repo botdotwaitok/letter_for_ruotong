@@ -604,6 +604,11 @@
     function tryOpen() {
       if (pwdInput.value.toLowerCase().trim() === PWD) {
         pwdScreen.classList.add('hidden');
+        // Start music immediately on user interaction
+        bgm.play().then(() => {
+          playing = true;
+          musicBtn.classList.add('playing');
+        }).catch(() => {});
         setTimeout(() => {
           letterScreen.style.display = 'block';
           requestAnimationFrame(() => {
