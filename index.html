@@ -588,7 +588,7 @@
   </div>
 
   <!-- ======== AUDIO (placeholder) ======== -->
-  <audio id="bgm" loop>
+  <audio id="bgm" loop preload="auto">
     <source src="bgm.mp3" type="audio/mpeg">
   </audio>
 
@@ -626,6 +626,15 @@
 
     submitBtn.addEventListener('click', tryOpen);
     pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryOpen(); });
+
+    // Unlock audio on first touch (mobile browsers require this)
+    function unlockAudio() {
+      bgm.load();
+      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('click', unlockAudio);
+    }
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('click', unlockAudio);
 
     // === Petals ===
     function createPetals() {
