@@ -635,6 +635,9 @@
     const errorMsg = document.getElementById('error-msg');
     const pwdScreen = document.getElementById('password-screen');
     const letterScreen = document.getElementById('letter-screen');
+    const bgm = document.getElementById('bgm');
+    const musicBtn = document.getElementById('music-btn');
+    let playing = false;
 
     let audioReady = false;
     const loadingWrap = document.getElementById('loading-wrap');
@@ -726,11 +729,7 @@
       els.forEach(el => obs.observe(el));
     }
 
-    // === Music ===
-    const musicBtn = document.getElementById('music-btn');
-    const bgm = document.getElementById('bgm');
-    let playing = false;
-
+    // === Music Toggle ===
     musicBtn.addEventListener('click', () => {
       if (!bgm.src && !bgm.querySelector('source[src]')) {
         alert('音乐文件还没有添加哦～');
