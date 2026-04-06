@@ -143,6 +143,37 @@
       opacity: 1;
     }
 
+    .loading-wrap {
+      margin-top: 18px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .loading-wrap.show {
+      opacity: 1;
+    }
+    .loading-text {
+      font-size: 12px;
+      color: var(--ink-light);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .loading-bar {
+      width: 160px;
+      height: 2px;
+      background: rgba(232,180,184,0.25);
+      border-radius: 1px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .loading-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--rose);
+      border-radius: 1px;
+      transition: width 0.3s ease;
+    }
+
     /* ============ LETTER SCREEN ============ */
     #letter-screen {
       display: none;
@@ -443,6 +474,10 @@
     <input type="password" class="password-input" id="pwd-input" placeholder="请输入密码" autofocus>
     <button class="submit-btn" id="submit-btn">打 开</button>
     <p class="error-msg" id="error-msg">密码不对哦</p>
+    <div class="loading-wrap" id="loading-wrap">
+      <p class="loading-text">正在准备…</p>
+      <div class="loading-bar"><div class="loading-fill" id="loading-fill"></div></div>
+    </div>
   </div>
 
   <!-- ======== LETTER SCREEN ======== -->
@@ -601,22 +636,54 @@
     const pwdScreen = document.getElementById('password-screen');
     const letterScreen = document.getElementById('letter-screen');
 
+    let audioReady = false;
+    const loadingWrap = document.getElementById('loading-wrap');
+    const loadingFill = document.getElementById('loading-fill');
+
+    // Track audio loading progress
+    bgm.addEventListener('progress', () => {
+      if (bgm.buffered.length > 0) {
+        const pct = (bgm.buffered.end(bgm.buffered.length - 1) / bgm.duration) * 100;
+        loadingFill.style.width = pct + '%';
+      }
+    });
+    bgm.addEventListener('canplaythrough', () => {
+      audioReady = true;
+      loadingFill.style.width = '100%';
+      // If user already entered password and is waiting
+      if (pendingOpen) openLetter();
+    });
+
+    let pendingOpen = false;
+
+    function openLetter() {
+      pendingOpen = false;
+      loadingWrap.classList.remove('show');
+      pwdScreen.classList.add('hidden');
+      bgm.play().then(() => {
+        playing = true;
+        musicBtn.classList.add('playing');
+      }).catch(() => {});
+      setTimeout(() => {
+        letterScreen.style.display = 'block';
+        requestAnimationFrame(() => {
+          letterScreen.classList.add('visible');
+          createPetals();
+          initReveal();
+        });
+      }, 600);
+    }
+
     function tryOpen() {
       if (pwdInput.value.toLowerCase().trim() === PWD) {
-        pwdScreen.classList.add('hidden');
-        // Start music immediately on user interaction
-        bgm.play().then(() => {
-          playing = true;
-          musicBtn.classList.add('playing');
-        }).catch(() => {});
-        setTimeout(() => {
-          letterScreen.style.display = 'block';
-          requestAnimationFrame(() => {
-            letterScreen.classList.add('visible');
-            createPetals();
-            initReveal();
-          });
-        }, 600);
+        if (audioReady) {
+          openLetter();
+        } else {
+          // Show loading, wait for audio
+          loadingWrap.classList.add('show');
+          submitBtn.style.display = 'none';
+          pendingOpen = true;
+        }
       } else {
         errorMsg.classList.add('show');
         pwdInput.value = '';
@@ -626,15 +693,6 @@
 
     submitBtn.addEventListener('click', tryOpen);
     pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryOpen(); });
-
-    // Unlock audio on first touch (mobile browsers require this)
-    function unlockAudio() {
-      bgm.load();
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('click', unlockAudio);
-    }
-    document.addEventListener('touchstart', unlockAudio);
-    document.addEventListener('click', unlockAudio);
 
     // === Petals ===
     function createPetals() {
