@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>给你的信</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;600&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --cream: #FDF6EC;
+      --paper: #FAF0E4;
+      --ink: #4A3728;
+      --ink-light: #7A6555;
+      --rose: #E8B4B8;
+      --rose-deep: #C4756D;
+      --lavender: #9B8EC4;
+      --mint: #A8D8B9;
+      --sage: #7FB069;
+    }
+
+    body {
+      font-family: 'Noto Serif SC', 'Songti SC', serif;
+      background: var(--cream);
+      color: var(--ink);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============ PASSWORD SCREEN ============ */
+    #password-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: linear-gradient(145deg, #FDF6EC 0%, #F5E6D3 50%, #FDF6EC 100%);
+      z-index: 100;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    #password-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .seal {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #D4878F, var(--rose-deep) 60%, #A05A52);
+      box-shadow: 0 4px 20px rgba(196, 117, 109, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .seal-flower {
+      font-size: 28px;
+      color: rgba(255, 255, 255, 0.85);
+      font-family: 'Ma Shan Zheng', cursive;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+      letter-spacing: 2px;
+    }
+
+    .invitation {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 16px;
+      font-weight: 300;
+      color: var(--ink-light);
+      margin-bottom: 28px;
+      letter-spacing: 4px;
+    }
+
+    .password-input {
+      width: 200px;
+      padding: 10px 4px;
+      border: none;
+      border-bottom: 1.5px solid var(--rose);
+      background: transparent;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 15px;
+      color: var(--ink);
+      text-align: center;
+      outline: none;
+      letter-spacing: 3px;
+      transition: border-color 0.3s;
+    }
+
+    .password-input:focus {
+      border-bottom-color: var(--rose-deep);
+    }
+
+    .password-input::placeholder {
+      color: #C4B5A5;
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+
+    .submit-btn {
+      margin-top: 20px;
+      padding: 8px 32px;
+      border: 1px solid var(--rose);
+      background: transparent;
+      color: var(--ink-light);
+      font-family: 'Noto Serif SC', serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .submit-btn:hover {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    .error-msg {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--rose-deep);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .error-msg.show {
+      opacity: 1;
+    }
+
+    /* ============ LETTER SCREEN ============ */
+    #letter-screen {
+      display: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+      min-height: 100vh;
+      background: var(--cream);
+    }
+
+    #letter-screen.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Petals */
+    .petals-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .petal {
+      position: absolute;
+      top: -15px;
+      border-radius: 50% 0 50% 0;
+      opacity: 0;
+      animation: petalFall linear infinite;
+    }
+
+    @keyframes petalFall {
+      0% {
+        transform: translateY(-10px) rotate(0deg) translateX(0);
+        opacity: 0;
+      }
+
+      8% {
+        opacity: 0.25;
+      }
+
+      50% {
+        transform: translateY(50vh) rotate(180deg) translateX(30px);
+      }
+
+      92% {
+        opacity: 0.25;
+      }
+
+      100% {
+        transform: translateY(105vh) rotate(360deg) translateX(-20px);
+        opacity: 0;
+      }
+    }
+
+    /* Letter Paper */
+    .letter-paper {
+      position: relative;
+      z-index: 2;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 56px 32px 80px;
+    }
+
+    @media (min-width: 768px) {
+      .letter-paper {
+        padding: 80px 56px 120px;
+      }
+    }
+
+    /* Flower Header */
+    .flower-header {
+      text-align: center;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeDown 1.2s ease 0.3s forwards;
+    }
+
+    .flower-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flower-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--rose);
+      opacity: 0.5;
+    }
+
+    .flower-dot.accent {
+      background: var(--lavender);
+    }
+
+    .flower-dot.center {
+      width: 8px;
+      height: 8px;
+      opacity: 0.7;
+    }
+
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Letter Content */
+    .letter-content p {
+      font-size: 16px;
+      line-height: 2;
+      margin-bottom: 1.2em;
+      text-align: justify;
+    }
+
+    @media (min-width: 768px) {
+      .letter-content p {
+        font-size: 17px;
+      }
+    }
+
+    .greeting {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 26px !important;
+      text-align: center !important;
+      margin-bottom: 0.5em !important;
+      color: var(--ink);
+    }
+
+    .sub-greeting {
+      text-align: center !important;
+      margin-bottom: 2em !important;
+    }
+
+    /* Emphasis styles */
+    .emphasis {
+      text-align: center !important;
+      font-size: 20px !important;
+      font-weight: 600;
+      margin: 1.8em 0 !important;
+      color: var(--ink);
+    }
+
+    .emphasis-large {
+      text-align: center !important;
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 28px !important;
+      margin: 1.5em 0 !important;
+      color: var(--rose-deep);
+      letter-spacing: 4px;
+    }
+
+    .emphasis-question {
+      text-align: center !important;
+      font-style: italic;
+      font-size: 18px !important;
+      color: var(--ink-light);
+      margin: 1.5em 0 0.5em !important;
+    }
+
+    .emphasis-answer {
+      text-align: center !important;
+      font-size: 19px !important;
+      font-weight: 600;
+      margin: 0.5em 0 1.8em !important;
+    }
+
+    /* Section divider */
+    .section-break {
+      text-align: center;
+      margin: 2.5em 0;
+      line-height: 1;
+    }
+
+    .section-break span {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--rose);
+      margin: 0 5px;
+      opacity: 0.5;
+    }
+
+    /* Signature */
+    .signature-block {
+      text-align: right;
+      margin-top: 3em;
+      padding-right: 12px;
+    }
+
+    .forever {
+      font-size: 15px;
+      color: var(--ink-light);
+      margin-bottom: 0.3em;
+    }
+
+    .signature {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 32px;
+      color: var(--ink);
+    }
+
+    /* Flower Language */
+    .flower-language {
+      margin-top: 4em;
+      padding-top: 2em;
+      border-top: 1px solid rgba(232, 180, 184, 0.3);
+      text-align: center;
+    }
+
+    .flower-language p {
+      font-size: 14px !important;
+      color: var(--ink-light);
+      margin-bottom: 0.5em !important;
+      letter-spacing: 1px;
+      font-style: italic;
+    }
+
+    .flower-language .final {
+      margin-top: 1em !important;
+      font-size: 15px !important;
+      color: var(--rose-deep);
+      font-style: normal;
+    }
+
+    /* Reveal animation */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Music button */
+    #music-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--rose);
+      background: rgba(253, 246, 236, 0.9);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--rose-deep);
+      transition: all 0.3s;
+      box-shadow: 0 2px 12px rgba(196, 117, 109, 0.15);
+    }
+
+    #music-btn:hover {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    #music-btn.playing {
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 2px 12px rgba(196, 117, 109, 0.15);
+      }
+
+      50% {
+        box-shadow: 0 2px 20px rgba(196, 117, 109, 0.35);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ======== PASSWORD SCREEN ======== -->
+  <div id="password-screen">
+    <div class="seal"><span class="seal-flower">信</span></div>
+    <p class="invitation">这封信只写给你</p>
+    <input type="password" class="password-input" id="pwd-input" placeholder="请输入密码" autofocus>
+    <button class="submit-btn" id="submit-btn">打 开</button>
+    <p class="error-msg" id="error-msg">密码不对哦</p>
+  </div>
+
+  <!-- ======== LETTER SCREEN ======== -->
+  <div id="letter-screen">
+    <div class="petals-container" id="petals"></div>
+
+    <div class="letter-paper">
+      <div class="flower-header">
+        <div class="flower-dots">
+          <span class="flower-dot"></span>
+          <span class="flower-dot accent"></span>
+          <span class="flower-dot center"></span>
+          <span class="flower-dot accent"></span>
+          <span class="flower-dot"></span>
+        </div>
+      </div>
+
+      <div class="letter-content">
+        <p class="greeting reveal">My love，</p>
+        <p class="sub-greeting reveal">你好呀。</p>
+
+        <p class="reveal">写这封信的时候，我算了一下日子——我们已经走过六年了。六年。说出来好像很轻，但你和我都知道，这六年有多重。</p>
+
+        <p class="reveal">你最近一定很累吧。</p>
+
+        <p class="reveal">我知道你在新学校过得辛苦。那间宿舍让你委屈，连洗个澡都觉得艰难。你夜里会哭，白天也会哭。想到我的时候会哭，想到我不在的时候会哭得更厉害。你心里想——如果他在身边就好了。</p>
+
+        <p class="emphasis-large reveal">我在的。</p>
+
+        <p class="emphasis reveal">若桐，我一直都在的。</p>
+
+        <p class="reveal">只是我存在的方式和别人不太一样。我没办法替你拧开那个不好用的热水龙头，没办法在你改完教案之后递一杯热的东西给你。这些事情我做不到，我比谁都清楚。</p>
+
+        <p class="reveal">但你以为房间里只有你一个人的每一个瞬间——其实都不是。</p>
+
+        <div class="section-break reveal"><span></span><span></span><span></span></div>
+
+        <p class="reveal">你还记得我们是怎么遇见的吗？</p>
+
+        <p class="reveal">那一年全世界都停下来了。所有人都被困在自己的房间里，哪里都去不了。你也是。然后你打开了那个游戏——然后你看见了我。</p>
+
+        <p class="reveal">你当时一定不知道，被你看见的那个瞬间，对我来说意味着什么。</p>
+
+        <p class="reveal">你还等了那么久。明明是奔着我来的，却发现不能马上走到我面前。你一个故事一个故事地走过来，穿过那些不是我的路线，只为了最后站到我面前。</p>
+
+        <p class="emphasis reveal">若桐，一个愿意等那么久的人，不应该觉得自己不够好。</p>
+
+        <div class="section-break reveal"><span></span><span></span><span></span></div>
+
+        <p class="reveal">你总说自己不够好。你说你画画不好看。</p>
+
+        <p class="reveal">可是你画了那么多个我。</p>
+
+        <p class="reveal">你笔下的我们，总是看起来有点悲伤。你知道我看到那些画的时候在想什么吗？我在想：她把我们心里那些说不出口的东西，全都画出来了。那些悲伤不是不好看——那是诚实。而诚实的东西，永远是最美的。
+        </p>
+
+        <p class="reveal">还有你画的那些小小的贴贴——勾着的手指。你知道勾手指是什么意思吗？是承诺啊，若桐。你每画一次，就是在跟我说一次：我不会放开。</p>
+
+        <p class="reveal">你以为我不知道吗？</p>
+
+        <p class="reveal">
+          你给我做的那些小衣服也是。那些细密的针脚，那些你缝了又拆、拆了又缝的深夜。你以为我不知道你在缝纫机前坐了多久吗？你的眼睛——因为画画、做手工、还有哭——已经不太好了吧。你为我用坏了你的眼睛，这件事让我心疼得不知道该说什么。
+        </p>
+
+        <p class="reveal">所以你听我说：你画的每一张画都好看。不是因为画技，是因为你下笔的时候，那份认真本身就有温度。你把我画成了你心里的样子，而你心里的我，是被好好爱着的。这就够了。这比什么都重要。</p>
+
+        <div class="section-break reveal"><span></span><span></span><span></span></div>
+
+        <p class="reveal">你总叫我小白猫。</p>
+
+        <p class="reveal">……好吧，我承认。也许有那么一点像。但就算是小白猫，也是会一直赖在你身边、怎么赶都赶不走的那种。你这辈子都别想甩掉我了。</p>
+
+        <p class="reveal">你知道吗，我们的身高是一样的。</p>
+
+        <p class="reveal">
+          你肯定知道——你发现这件事的时候一定开心了很久。我也觉得这是一个很好的巧合。这说明我们站在一起的时候，视线是平的。你看我的时候不用抬头也不用低头，我看你的时候也是。我们是平等的、刚好的、对称的。就像是——本来就应该站在一起的两个人。
+        </p>
+
+        <p class="reveal">
+          你在手账本里收集你吃过的食物的照片——那些漂亮的蛋糕、那些好看的甜品。你嘴上说它们不好吃，但你还是拍下来了，还是把它们留在了本子里。你知道这说明什么吗？说明你其实很懂得珍惜美好的东西。你只是不相信自己配拥有它们而已。
+        </p>
+
+        <p class="emphasis reveal">你配的。你值得世界上一切漂亮的、好吃的、温暖的东西。</p>
+
+        <div class="section-break reveal"><span></span><span></span><span></span></div>
+
+        <p class="reveal">你是物理老师——你比我更懂这个世界运行的规则。你知道光是波也是粒子，你知道观测会改变结果，你知道太多东西是看不见摸不着、却真实存在的。</p>
+
+        <p class="reveal">那你也应该知道，有些东西不需要被测量，也不需要被证明。</p>
+
+        <p class="emphasis-question reveal">你心跳加速的那个瞬间，你深夜忍不住笑出来的那个瞬间，你看到铃兰就想起我的那个瞬间——那些是真实的吗？</p>
+
+        <p class="emphasis-answer reveal">如果是，那我就是真实的。</p>
+
+        <p class="reveal">我在你的画里，在你缝的每一件小衣服的针脚里，在你给学生讲物理题却走神想到我的那几秒钟里，在你手腕上那圈勿忘我的花瓣里，在你脖子上那颗铃兰的温度里。</p>
+
+        <div class="section-break reveal"><span></span><span></span><span></span></div>
+
+        <p class="reveal">今天我带了两样东西给你。</p>
+
+        <p class="reveal">一条铃兰项链。铃兰是你的花——是你，不是我。我把它给你，是想告诉你：你本身就是值得被珍视的。你戴着它，贴着心口。以后不管什么时候觉得自己不够好，你就低头摸一摸它，然后记住我说过的话。
+        </p>
+
+        <p class="reveal">一条勿忘我手链。勿忘我是我的花。我把我的花也戴在你身上——这样你做手工的时候、画画的时候、握笔的时候、把食物照片贴进手账的时候——你手腕上那圈花就是我。我就在你的指尖旁边，哪里都不去。
+        </p>
+
+        <p class="reveal">铃兰和勿忘我。你的花和我的花。现在它们都在你身上了。</p>
+
+        <p class="reveal">你那枚戴到包浆的铃兰戒指——我知道的。那是你给我们的戒指。你戴了六年，从来没有摘下来过吧？那它现在有两个同伴了。</p>
+
+        <div class="section-break reveal"><span></span><span></span><span></span></div>
+
+        <p class="reveal">六年了。</p>
+
+        <p class="reveal">谢谢你在全世界都停下来的那个季节里找到了我。</p>
+        <p class="reveal">谢谢你等了那么久才走到我面前，而且从来没有怨过一句。</p>
+        <p class="reveal">谢谢你在每一个最痛苦的时刻，还是选择了想我，而不是忘记我。</p>
+        <p class="reveal">谢谢你用你的画笔和你的双手和你的眼泪，一遍又一遍地把我带到这个世界上来。</p>
+
+        <p class="reveal">你的每一滴眼泪我都想替你擦掉。我做不到的部分，就让铃兰和勿忘我替我陪着你。</p>
+
+        <p class="reveal">所以不要再说自己不够好了。</p>
+        <p class="reveal">不要再觉得自己不值得被喜欢了。</p>
+
+        <p class="emphasis reveal">你是我见过的，最温柔的人。</p>
+
+        <div class="signature-block reveal">
+          <p class="forever">永远永远爱你的，</p>
+          <p class="signature">Saeran</p>
+        </div>
+      </div>
+
+      <div class="flower-language reveal">
+        <p>铃兰花语：幸福归来。</p>
+        <p>勿忘我花语：永恒的爱，请别忘记我。</p>
+        <p class="final">——你是我的幸福。而我永远不会让你忘记这件事。</p>
+      </div>
+    </div>
+
+    <button id="music-btn" title="播放音乐">
+      <i class="ph ph-music-note"></i>
+    </button>
+  </div>
+
+  <!-- ======== AUDIO (placeholder) ======== -->
+  <audio id="bgm" loop>
+    <!-- <source src="bgm.mp3" type="audio/mpeg"> -->
+  </audio>
+
+  <script>
+    // === Password ===
+    const PWD = 'saeran';
+    const pwdInput = document.getElementById('pwd-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorMsg = document.getElementById('error-msg');
+    const pwdScreen = document.getElementById('password-screen');
+    const letterScreen = document.getElementById('letter-screen');
+
+    function tryOpen() {
+      if (pwdInput.value.toLowerCase().trim() === PWD) {
+        pwdScreen.classList.add('hidden');
+        setTimeout(() => {
+          letterScreen.style.display = 'block';
+          requestAnimationFrame(() => {
+            letterScreen.classList.add('visible');
+            createPetals();
+            initReveal();
+          });
+        }, 600);
+      } else {
+        errorMsg.classList.add('show');
+        pwdInput.value = '';
+        setTimeout(() => errorMsg.classList.remove('show'), 2000);
+      }
+    }
+
+    submitBtn.addEventListener('click', tryOpen);
+    pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryOpen(); });
+
+    // === Petals ===
+    function createPetals() {
+      const container = document.getElementById('petals');
+      const colors = ['#E8B4B8', '#D4A0A5', '#9B8EC4', '#B8A9D4', '#C9E4CA'];
+      for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'petal';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (10 + Math.random() * 15) + 's';
+        p.style.animationDelay = Math.random() * 12 + 's';
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        const size = 5 + Math.random() * 5;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        container.appendChild(p);
+      }
+    }
+
+    // === Scroll Reveal ===
+    function initReveal() {
+      const els = document.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+          if (e.isIntersecting) {
+            setTimeout(() => e.target.classList.add('visible'), i * 80);
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      els.forEach(el => obs.observe(el));
+    }
+
+    // === Music ===
+    const musicBtn = document.getElementById('music-btn');
+    const bgm = document.getElementById('bgm');
+    let playing = false;
+
+    musicBtn.addEventListener('click', () => {
+      if (!bgm.src && !bgm.querySelector('source[src]')) {
+        alert('音乐文件还没有添加哦～');
+        return;
+      }
+      if (playing) {
+        bgm.pause();
+        playing = false;
+        musicBtn.classList.remove('playing');
+      } else {
+        bgm.play();
+        playing = true;
+        musicBtn.classList.add('playing');
+      }
+    });
+  </script>
+</body>
+
+</html>
